@@ -2,8 +2,10 @@
 using System.Drawing;
 using System.Resources;
 using System.Windows.Forms;
+using System.Linq;
+using System.Collections.Generic;
 
-// TODO: deck empty, hand empty, win condition, notification for book forming, display formed books, can ask for cards you dont have, better intperetation of requested card strings, clear request box on request
+// TODO: hand empty, notification for book forming, display formed books, comments, remove unused code
 
 namespace GoFishGUI
 {
@@ -16,6 +18,7 @@ namespace GoFishGUI
         Label[] dialogues = new Label[4];
         Label[] scores = new Label[4];
         int cards_in_a_row = 9;
+        int books_to_win = 3;
 
         public FormGoFish()
         {
@@ -102,6 +105,7 @@ namespace GoFishGUI
 
         private void DrawButton_Click(object sender, EventArgs e)
         {
+            CheckIfPackEmpty();
             game.DealCard(0);
             EndPlayerTurn();
             IncrementTurn();
@@ -120,43 +124,53 @@ namespace GoFishGUI
 
         // Gameplay
 
-        private void NextTurn()
+        private bool RequestCard(int requested_card_rank)
         {
-            HideDialogues();
+            CheckIfPackEmpty();
+            bool is_catch = true;
+            string rank_as_string = game.RankAsString(requested_card_rank);
+            bool has_card = game.HasCardResponse(game.next_turn, requested_card_rank);
 
-            dialogues[game.current_turn].Visible = true;
-            dialogues[game.next_turn].Visible = true;
-
-            CurrentTurnLabel.Text = "Current turn: " + Convert.ToString(game.current_turn + 1);
-
-            if (game.current_turn != 0) // Computer turns
+            dialogues[game.current_turn].Text = "Do you have any " + rank_as_string;
+            dialogues[game.current_turn].Refresh();
+            
+            if (has_card)
             {
-                int requested_card_rank = game.ComputerRequestCard(game.current_turn);
-                string rank_as_string = game.RankAsString(requested_card_rank);
-                dialogues[game.current_turn].Text = "Do you have any " + rank_as_string;
-                dialogues[game.current_turn].Refresh();
-                bool has_card = game.HasCardResponse(game.next_turn, requested_card_rank);
-                if (has_card)
+                dialogues[game.next_turn].Text = "Yes";
+                int num = game.TransferCards(game.current_turn, game.next_turn, requested_card_rank);
+                dialogues[game.current_turn].Text += $"\n<Recieved {num} {rank_as_string}>";
+            }
+            else
+            {
+                dialogues[game.next_turn].Text = "I don't, Go Fish";
+                Card c = game.DealCard(game.current_turn);
+                dialogues[game.current_turn].Text += $"\n<Recieved a {c.GetName()}>";
+
+                if (c.GetRank() == requested_card_rank)
                 {
-                    dialogues[game.next_turn].Text = "Yes";
-                    int num = game.TransferCards(game.current_turn, game.next_turn, requested_card_rank);
-                    dialogues[game.current_turn].Text += $"\n<Recieved {num} {rank_as_string}>";
+                    dialogues[game.current_turn].Text += "\nCatch!";
                 }
                 else
                 {
-                    dialogues[game.next_turn].Text = "Go Fish";
-                    Card c = game.DealCard(game.current_turn);
-                    dialogues[game.current_turn].Text += $"\n<Recieved a {c.GetName()}>";
-
-                    if (c.GetRank() == requested_card_rank)
-                    {
-                        dialogues[game.current_turn].Text += "\nCatch!";
-                    }
-                    else
-                    {
-                        IncrementTurn();
-                    }
+                    IncrementTurn();
+                    is_catch = false;
                 }
+            }
+            return is_catch;
+        }
+
+        private void NextTurn()
+        {
+            HideDialogues();
+            dialogues[game.current_turn].Visible = true;
+            dialogues[game.next_turn].Visible = true;
+            
+            CurrentTurnLabel.Text = "Current turn: " + Convert.ToString(game.current_turn + 1);
+
+            if (game.current_turn != 0)
+            {
+                int requested_card_rank = game.ComputerRequestCard(game.current_turn);
+                RequestCard(requested_card_rank);
             }
             else
             {
@@ -170,43 +184,35 @@ namespace GoFishGUI
 
         private void PlayerRequestCard()
         {
-            int requested_card_rank = Convert.ToInt32(RequestCardInput.Text);
-            HideDialogues();
-
-            dialogues[game.current_turn].Visible = true;
-            dialogues[game.next_turn].Visible = true;
-
-
-            string rank_as_string = game.RankAsString(requested_card_rank);
-            dialogues[game.current_turn].Text = "Do you have any " + rank_as_string;
-            dialogues[game.current_turn].Refresh();
-            bool has_card = game.HasCardResponse(game.next_turn, requested_card_rank);
-            if (has_card)
+            int requested_card_rank;
+            try
             {
-                dialogues[game.next_turn].Text = "Yes";
-                int num = game.TransferCards(game.current_turn, game.next_turn, requested_card_rank);
-                dialogues[game.current_turn].Text += $"\n<Recieved {num} {rank_as_string}>";
+                requested_card_rank = Convert.ToInt32(RequestCardInput.Text);
+            }
+            catch (FormatException e)
+            {
+                requested_card_rank = InterpretRequestedRank(RequestCardInput.Text);
+            }
+
+            if (!game.Hands[0].HasCard(requested_card_rank))
+            {
+                MessageBox.Show("You don't have a card of that rank");
             }
             else
             {
-                dialogues[game.next_turn].Text = "Go Fish";
-                Card c = game.DealCard(game.current_turn);
-                dialogues[game.current_turn].Text += $"\n<Recieved a {c.GetName()}>";
+                dialogues[game.current_turn].Visible = true;
+                dialogues[game.next_turn].Visible = true;
 
-                if (c.GetRank() == requested_card_rank)
+                bool is_catch = RequestCard(requested_card_rank);
+
+                if (!is_catch)
                 {
-                    dialogues[game.current_turn].Text += "\nCatch!";
-                }
-                else
-                {
-                    IncrementTurn();
                     EndPlayerTurn();
                 }
+                FormBooks();
+                DrawPlayerCardImages();
             }
-
-            FormBooks();
-            DrawPlayerCardImages();
-
+            RequestCardInput.Clear();
         }
 
         // Gameplay admin
@@ -220,6 +226,7 @@ namespace GoFishGUI
 
         private void IncrementTurn()
         {
+            CheckForWinner();
             game.current_turn++;
             game.current_turn %= 4;
             game.next_turn = game.current_turn + 1;
@@ -232,6 +239,102 @@ namespace GoFishGUI
             NextTurnButton.Enabled = true;
             DrawButton.Enabled = false;
             RequestCardButton.Enabled = false;
+        }
+
+        private void EndGame(int winner, int score)
+        {
+            string message = $"{winner} has won the game with {score} books!";
+            MessageBox.Show(message);
+            NewGame();
+        }
+
+        private void EndGame(int winner, int score, bool draw)
+        {
+            string message;
+            if (!draw)
+            {
+                message = $"The pack is empty, the result is a draw";
+            }
+            else
+            {
+                message = $"The pack is empty, {winner} has won the game with {score} books!";
+            }
+            MessageBox.Show(message);
+            NewGame();
+            
+        }
+
+        private void CheckForWinner()
+        {
+            for (int i = 0; i < game.Hands.Length; i++)
+            {
+                if (game.Hands[i].BookCount >= books_to_win)
+                {
+                    EndGame(i + 1, game.Hands[i].BookCount);
+                }
+            }
+        }
+
+        private void CheckIfPackEmpty()
+        {
+            if (game.PackSize <= 0)
+            {
+                int[] scores = new int[4];
+                int count = 0;
+                bool draw = false;
+
+                for (int i = 0; i < game.Hands.Length; i++)
+                {
+                    scores[i] = game.Hands[i].BookCount;
+                }
+                int max_score = scores.Max();
+                int winning_player = scores.ToList().IndexOf(max_score);
+
+                for (int i = 0; i < scores.Length; i++)
+                {
+                    if (scores[i] == max_score)
+                    {
+                        count++;
+                    }
+                }
+                if (count > 1 || max_score == 0)
+                {
+                    draw = true;
+                }
+
+                EndGame(winning_player, max_score, draw);
+            }
+        }
+
+        private int InterpretRequestedRank(string rank)
+        {
+            rank.ToLower();
+            int output;
+
+            Dictionary<string, int> dict = new Dictionary<string, int>() {
+                {"ace", 1},
+                {"two", 2},
+                {"three", 3},
+                {"four", 4},
+                {"five", 5},
+                {"six", 6},
+                {"seven", 7},
+                {"eight", 8},
+                {"nine", 9},
+                {"ten", 10},
+                {"jack", 11},
+                {"queen", 12},
+                {"king", 13}
+            };
+
+            bool valid_key = dict.TryGetValue(rank, out output);
+
+            if (!valid_key)
+            {
+                output = -1;
+            }
+
+            return output;
         }
     }
 }

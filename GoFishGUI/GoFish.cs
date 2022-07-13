@@ -21,6 +21,13 @@ namespace GoFishGUI
             }
         }
 
+        public int PackSize
+        {
+            get {
+                return pack.Size;
+            }
+        }
+
 
         public void ShuffleCards()
         {
