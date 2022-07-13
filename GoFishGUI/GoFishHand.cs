@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace GoFishGUI
 {
@@ -17,7 +15,9 @@ namespace GoFishGUI
 
         public int BookCount
         {
-            get { return books.Count; } 
+            get {
+                return books.Count;
+            }
         }
 
         public int[] GetRanks() // list of ranks of cards in hand
@@ -46,7 +46,7 @@ namespace GoFishGUI
             int[] ranks = GetRanks();
             for (int i = 0; i < Size; i++)
             {
-                if (ranks[i]==rank)
+                if (ranks[i] == rank)
                 {
                     card_present = true;
                 }
@@ -70,12 +70,12 @@ namespace GoFishGUI
                     }
                 }
 
-                if (count==4) // If there is a full book:
+                if (count == 4) // If there is a full book:
                 {
                     int j = 0;
-                    while (book.Size<4)
+                    while (book.Size < 4)
                     {
-                        if (cards[j%Size].GetRank()==rank)
+                        if (cards[j % Size].GetRank() == rank)
                         {
                             book.AddCard(RemoveCard(j % Size)); // Add each card of the rank to a book and remove those cards from the hand
                         }

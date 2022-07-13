@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace GoFishGUI
 {
@@ -15,7 +13,9 @@ namespace GoFishGUI
         private int size;  // size is number of cards currently in pack
         public int Size  //property to provide read-only access to size field
         {
-            get { return size; }
+            get {
+                return size;
+            }
         }
 
         //constructor

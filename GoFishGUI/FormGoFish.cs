@@ -3,7 +3,7 @@ using System.Drawing;
 using System.Resources;
 using System.Windows.Forms;
 
-// TODO: deck empty, hand empty, win condition, notification for book forming, display formed books, can ask for cards you dont have, better intperetation of requested card strings
+// TODO: deck empty, hand empty, win condition, notification for book forming, display formed books, can ask for cards you dont have, better intperetation of requested card strings, clear request box on request
 
 namespace GoFishGUI
 {
@@ -15,29 +15,26 @@ namespace GoFishGUI
         GoFish game;
         Label[] dialogues = new Label[4];
         Label[] scores = new Label[4];
+        int cards_in_a_row = 9;
 
         public FormGoFish()
         {
             InitializeComponent();
         }
 
-        // Shuffle
-        // Deal
-        // Turn loop to exit
-
-
-
         private void NewGameButton_Click(object sender, EventArgs e)
         {
             NewGame();
         }
 
+        // Setup
         private void FormGoFish_Load(object sender, EventArgs e)
         {
             g = CreateGraphics();
             P1CardImages.ImageSize = new Size(72, 96);
 
-            dialogues = new Label[] { P1Dialogue, P2Dialogue, P3Dialogue, P4Dialogue};
+            // Create lists of the dialogue boxes and scores for each player to make them more dynamically accessible
+            dialogues = new Label[] { P1Dialogue, P2Dialogue, P3Dialogue, P4Dialogue };
             scores = new Label[] { P1Score, P2Score, P3Score, P4Score };
 
             NewGame();
@@ -57,9 +54,11 @@ namespace GoFishGUI
                 HideDialogues();
                 scores[i].Text = "Score: 0";
             }
-            DrawPlayerCards();
+            DrawPlayerCardImages();
             NextTurn();
         }
+
+        // Graphics
 
         private void HideDialogues()
         {
@@ -70,7 +69,7 @@ namespace GoFishGUI
             }
         }
 
-        public void DrawPlayerCards()
+        public void DrawPlayerCardImages()
         {
             game.PlayerSortHand();
             GoFishHand player_hand = game.Hands[0];
@@ -95,9 +94,11 @@ namespace GoFishGUI
         {
             for (int i = 0; i < P1CardImages.Images.Count; i++)
             {
-                g.DrawImage(P1CardImages.Images[i], 100 + 100 * (i%game.cards_in_a_row), 500 + (100 * (i / game.cards_in_a_row)), 72, 96);
+                g.DrawImage(P1CardImages.Images[i], 100 + 100 * (i % cards_in_a_row), 500 + (100 * (i / cards_in_a_row)), 72, 96);
             }
         }
+
+        // Events
 
         private void DrawButton_Click(object sender, EventArgs e)
         {
@@ -107,22 +108,21 @@ namespace GoFishGUI
             HideDialogues();
         }
 
-        private void EndPlayerTurn()
-        {
-            DrawPlayerCards();
-            NextTurnButton.Enabled = true;
-            DrawButton.Enabled = false;
-            RequestCardButton.Enabled = false;
-        }
-
         private void NextTurnButton_Click(object sender, EventArgs e)
         {
             NextTurn();
         }
+
+        private void RequestCardButton_Click(object sender, EventArgs e)
+        {
+            PlayerRequestCard();
+        }
+
+        // Gameplay
+
         private void NextTurn()
         {
             HideDialogues();
-            DrawPlayerCards();
 
             dialogues[game.current_turn].Visible = true;
             dialogues[game.next_turn].Visible = true;
@@ -165,18 +165,13 @@ namespace GoFishGUI
                 RequestCardButton.Enabled = true;
             }
             FormBooks();
-        }
-
-        private void RequestCardButton_Click(object sender, EventArgs e)
-        {
-            PlayerRequestCard();
+            DrawPlayerCardImages();
         }
 
         private void PlayerRequestCard()
         {
             int requested_card_rank = Convert.ToInt32(RequestCardInput.Text);
             HideDialogues();
-            DrawPlayerCards();
 
             dialogues[game.current_turn].Visible = true;
             dialogues[game.next_turn].Visible = true;
@@ -208,16 +203,18 @@ namespace GoFishGUI
                     EndPlayerTurn();
                 }
             }
-            
+
             FormBooks();
-            DrawPlayerCards();
+            DrawPlayerCardImages();
 
         }
+
+        // Gameplay admin
 
         private void FormBooks()
         {
             game.Hands[game.current_turn].FormBooks();
-            DrawPlayerCards();
+            DrawPlayerCardImages();
             scores[game.current_turn].Text = "Score: " + Convert.ToString(game.Hands[game.current_turn].BookCount);
         }
 
@@ -227,6 +224,14 @@ namespace GoFishGUI
             game.current_turn %= 4;
             game.next_turn = game.current_turn + 1;
             game.next_turn %= 4;
+        }
+
+        private void EndPlayerTurn()
+        {
+            DrawPlayerCardImages();
+            NextTurnButton.Enabled = true;
+            DrawButton.Enabled = false;
+            RequestCardButton.Enabled = false;
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace GoFishGUI
 {
@@ -14,13 +13,17 @@ namespace GoFishGUI
 
         public Card this[int i]
         {
-            get { return cards[i]; }
+            get {
+                return cards[i];
+            }
             // this provides read-only access to the List by index
         }
 
         public int Size
         {
-            get { return cards.Count; }
+            get {
+                return cards.Count;
+            }
         }
 
         public void AddCard(Card card)

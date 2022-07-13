@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace GoFishGUI
 {
@@ -28,7 +26,7 @@ namespace GoFishGUI
 
         public int GetScore()
         {
-            int score = rank + suit*13;
+            int score = rank + suit * 13;
             return score;
         }
 

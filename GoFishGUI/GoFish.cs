@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace GoFishGUI
 {
@@ -9,13 +7,12 @@ namespace GoFishGUI
 
         private Pack pack = new Pack();
 
-        private GoFishHand[] hands = new GoFishHand[4] {new PlayerHand(), new ComputerHand(), new ComputerHand(), new ComputerHand() };
+        private GoFishHand[] hands = new GoFishHand[4] { new PlayerHand(), new ComputerHand(), new ComputerHand(), new ComputerHand() };
 
         private int cards_to_deal = 5;
 
         public int current_turn;
         public int next_turn;
-        public int cards_in_a_row = 9;
 
         public GoFishHand[] Hands
         {
@@ -75,7 +72,7 @@ namespace GoFishGUI
                     num++;
                 }
             }
-            if (num==0)
+            if (num == 0)
             {
                 throw new Exception();
             }
