@@ -3,7 +3,7 @@
     class Book : Hand
     {
         // Book class for the sets of 4 cards of the same rank that are needed to win
-        // Functions pretty much as a hand that will only have 4 cards
+        // Works as a hand that will only have 4 cards
 
         private int rank; // rank of the cards in the book
         public int GetRank()

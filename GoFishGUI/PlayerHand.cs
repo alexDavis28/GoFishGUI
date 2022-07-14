@@ -9,6 +9,8 @@ namespace GoFishGUI
             HandType = "Player";
         }
 
+        // Have to include for abstract class, probably a better way of doing this but short on time
+        // It's never called so it's fine (hopefully)
         public override int RequestCard()
         {
             throw new NotImplementedException();

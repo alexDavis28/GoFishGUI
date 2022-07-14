@@ -106,7 +106,7 @@ namespace GoFishGUI
         private void DrawButton_Click(object sender, EventArgs e)
         {
             CheckIfPackEmpty();
-            game.DealCard(0);
+            game.DealCardToHand(0);
             EndPlayerTurn();
             IncrementTurn();
             HideDialogues();
@@ -128,9 +128,10 @@ namespace GoFishGUI
         {
             CheckIfPackEmpty();
             bool is_catch = true;
-            string rank_as_string = game.RankAsString(requested_card_rank);
+            string rank_as_string = game.PluralRankAsString(requested_card_rank);
             bool has_card = game.HasCardResponse(game.next_turn, requested_card_rank);
 
+            // Current player asks for card
             dialogues[game.current_turn].Text = "Do you have any " + rank_as_string;
             dialogues[game.current_turn].Refresh();
             
@@ -143,7 +144,7 @@ namespace GoFishGUI
             else
             {
                 dialogues[game.next_turn].Text = "I don't, Go Fish";
-                Card c = game.DealCard(game.current_turn);
+                Card c = game.DealCardToHand(game.current_turn);
                 dialogues[game.current_turn].Text += $"\n<Recieved a {c.GetName()}>";
 
                 if (c.GetRank() == requested_card_rank)
@@ -169,11 +170,13 @@ namespace GoFishGUI
 
             if (game.current_turn != 0)
             {
+                // Ai turn
                 int requested_card_rank = game.ComputerRequestCard(game.current_turn);
                 RequestCard(requested_card_rank);
             }
             else
             {
+                // Plauer turn
                 NextTurnButton.Enabled = false;
                 DrawButton.Enabled = true;
                 RequestCardButton.Enabled = true;
@@ -191,6 +194,7 @@ namespace GoFishGUI
             }
             catch (FormatException e)
             {
+                // Handling for non-integer rank requests (ie: king, jack)
                 requested_card_rank = InterpretRequestedRank(RequestCardInput.Text);
             }
 
@@ -219,6 +223,7 @@ namespace GoFishGUI
 
         private void FormBooks()
         {
+            //Check for sets of 4 cards of same rank
             game.Hands[game.current_turn].FormBooks();
             DrawPlayerCardImages();
             scores[game.current_turn].Text = "Score: " + Convert.ToString(game.Hands[game.current_turn].BookCount);
@@ -302,13 +307,19 @@ namespace GoFishGUI
                     draw = true;
                 }
 
-                EndGame(winning_player, max_score, draw);
+                EndGame(winning_player+1, max_score, draw);
             }
         }
 
         private int InterpretRequestedRank(string rank)
         {
             rank.ToLower();
+
+            //Account for plurals
+            if (rank.EndsWith("s"))
+            {
+                rank = rank.Substring(0, rank.Length - 1);
+            }
             int output;
 
             Dictionary<string, int> dict = new Dictionary<string, int>() {

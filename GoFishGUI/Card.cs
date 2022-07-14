@@ -49,6 +49,7 @@ namespace GoFishGUI
             return GetRankAsString() + " of " + GetSuitAsString();
         }
 
+        // Alows Card objects to be sorted automatically by rank with .Sort
         public int CompareTo(Card other_card)
         {
             if (this.GetRank() < other_card.GetRank())

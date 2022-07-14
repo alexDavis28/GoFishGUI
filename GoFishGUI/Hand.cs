@@ -103,11 +103,10 @@ namespace GoFishGUI
                 Console.WriteLine(card.GetName());
             }
         }
-
-
-
+        
         public void SortCards()
         {
+            // Sorts cards by rank lowest to highest
             this.cards.Sort();
         }
     }

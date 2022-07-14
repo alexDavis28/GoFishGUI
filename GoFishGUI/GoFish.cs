@@ -7,6 +7,7 @@ namespace GoFishGUI
 
         private Pack pack = new Pack();
 
+        // 1 player hand, 3 ai hands
         private GoFishHand[] hands = new GoFishHand[4] { new PlayerHand(), new ComputerHand(), new ComputerHand(), new ComputerHand() };
 
         private int cards_to_deal = 5;
@@ -45,7 +46,7 @@ namespace GoFishGUI
             }
         }
 
-        public Card DealCard(int hand)
+        public Card DealCardToHand(int hand)
         {
             Card c = pack.DealCard();
             hands[hand].AddCard(c);
@@ -54,6 +55,7 @@ namespace GoFishGUI
 
         public void PlayerSortHand()
         {
+            // Sorts player's cards so they can be displayed in order of rank
             hands[0].SortCards();
         }
 
@@ -86,7 +88,7 @@ namespace GoFishGUI
             return num;
         }
 
-        public string RankAsString(int rank)
+        public string PluralRankAsString(int rank)
         {
             string[] ranks = { "Ace", "Two", "Three", "Four", "Five",
               "Six","Seven", "Eight", "Nine", "Ten",
