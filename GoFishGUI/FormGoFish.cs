@@ -5,8 +5,6 @@ using System.Windows.Forms;
 using System.Linq;
 using System.Collections.Generic;
 
-// TODO: hand empty, notification for book forming, display formed books, comments, remove unused code
-
 namespace GoFishGUI
 {
     public partial class FormGoFish : Form
@@ -256,13 +254,13 @@ namespace GoFishGUI
         private void EndGame(int winner, int score, bool draw)
         {
             string message;
-            if (!draw)
+            if (draw)
             {
                 message = $"The pack is empty, the result is a draw";
             }
             else
             {
-                message = $"The pack is empty, {winner} has won the game with {score} books!";
+                message = $"The pack is empty, Player {winner} has won the game with {score} book(s)!";
             }
             MessageBox.Show(message);
             NewGame();
